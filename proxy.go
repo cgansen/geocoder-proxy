@@ -11,6 +11,7 @@ func (gp GeocoderProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         fmt.Println(r.URL)
 }
 func main() {
+        fmt.Println("Listening on port 4444")
         var gp GeocoderProxy
         http.ListenAndServe(":4444", gp)
 }

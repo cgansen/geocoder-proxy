@@ -11,9 +11,6 @@ import (
         "encoding/base64"        
 )
 
-const GMapsHost = "http://maps.googleapis.com/maps/api/geocode/"
-const GMapsResponseFormat = "json"        
-
 type GeocoderProxy struct{}
 type GoogleMapsRequest struct {}
 
@@ -29,9 +26,7 @@ func (gmr *GoogleMapsRequest) Get(orig_req *http.Request) (response string) {
         signature := SignRequest(orig_req.RequestURI)
         fmt.Println("generated signature: " + signature)
         
-        // q := gmaps_url.Query()        
         gmaps_url.RawQuery += ("&signature=" +  signature)
-        
         
         fmt.Println("complete url: " + gmaps_url.String())
         

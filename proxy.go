@@ -21,13 +21,10 @@ func (gp GeocoderProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (gmr *GoogleMapsRequest) Get(orig_req *http.Request) (response string) {        
-        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com", Path: orig_req.URL.Path, RawQuery: orig_req.URL.RawQuery }
-        
+        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com", Path: orig_req.URL.Path, RawQuery: orig_req.URL.RawQuery }        
         signature := SignRequest(orig_req.RequestURI)
-        fmt.Println("generated signature: " + signature)
-        
-        gmaps_url.RawQuery += ("&signature=" +  signature)
-        
+        fmt.Println("generated signature: " + signature)        
+        gmaps_url.RawQuery += ("&signature=" +  signature)        
         fmt.Println("complete url: " + gmaps_url.String())
         
         to_fetch := gmaps_url.String()
@@ -46,11 +43,8 @@ func SignRequest(unsigned_url string) (signed_url string) {
         // setup the signing hash
         key, _ := base64.URLEncoding.DecodeString("sAKq6oNk-th0b96RRWxOctAt9ic=")
         shash := hmac.New(sha1.New, key)
-
         fmt.Println("string_to_sign: " + unsigned_url)        
-
         shash.Write([]byte(unsigned_url))
-
         return base64.URLEncoding.EncodeToString(shash.Sum(output))
 }
 

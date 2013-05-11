@@ -50,20 +50,10 @@ func SignRequest(unsigned_url string) (signed_url string) {
         key, _ := base64.URLEncoding.DecodeString("vNIXE0xscrmjlyV-12Nj_BvUPaw=")       // FIXME: use actual token
         shash := hmac.New(sha1.New, key)
 
-        // extract URL path and params, sign
-        // to_sign, _ := url.Parse(unsigned_url)        
-        // string_to_sign := to_sign.Path
-        // 
         fmt.Println("string_to_sign: " + unsigned_url)        
+
         shash.Write([]byte(unsigned_url))
-        
-        // add signature
-        // q := to_sign.Query()
-        // q.Set("signature", base64.URLEncoding.EncodeToString(shash.Sum(output)))
-        //         
-        // foo := to_sign
-        // foo.RawQuery = string_to_sign + "&signature=" + base64.URLEncoding.EncodeToString(shash.Sum(output))
-        
+
         return unsigned_url + "&signature=" + base64.URLEncoding.EncodeToString(shash.Sum(output))
 }
 

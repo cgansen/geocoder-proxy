@@ -19,17 +19,19 @@ type GoogleMapsRequest struct {}
 
 func (gp GeocoderProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         var gmr GoogleMapsRequest                
-        resp := gmr.Get(r.RequestURI)
+        resp := gmr.Get(r)
         w.Write([]byte(resp))
 }
 
-func (gmr *GoogleMapsRequest) Get(req_uri string) (response string) {        
-        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com"}
-
-        signed_url := SignRequest(req_uri)        
-        fmt.Println("signed url: " + signed_url)
+func (gmr *GoogleMapsRequest) Get(orig_req *http.Request) (response string) {        
+        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com", Path: orig_req.URL.Path, RawQuery: orig_req.URL.RawQuery }
         
-        gmaps_url.Path = signed_url
+        signature := SignRequest(orig_req.RequestURI)
+        fmt.Println("generated signature: " + signature)
+        
+        // q := gmaps_url.Query()        
+        gmaps_url.RawQuery += ("&signature=" +  signature)
+        
         
         fmt.Println("complete url: " + gmaps_url.String())
         
@@ -47,14 +49,14 @@ func SignRequest(unsigned_url string) (signed_url string) {
         var output []byte
                 
         // setup the signing hash
-        key, _ := base64.URLEncoding.DecodeString("vNIXE0xscrmjlyV-12Nj_BvUPaw=")       // FIXME: use actual token
+        key, _ := base64.URLEncoding.DecodeString("sAKq6oNk-th0b96RRWxOctAt9ic=")
         shash := hmac.New(sha1.New, key)
 
         fmt.Println("string_to_sign: " + unsigned_url)        
 
         shash.Write([]byte(unsigned_url))
 
-        return unsigned_url + "&signature=" + base64.URLEncoding.EncodeToString(shash.Sum(output))
+        return base64.URLEncoding.EncodeToString(shash.Sum(output))
 }
 
 func main() {

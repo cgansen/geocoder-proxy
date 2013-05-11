@@ -6,43 +6,66 @@ import (
         "net/url"
         "io/ioutil"
         "log"
+        "crypto/hmac"
+        "crypto/sha1"
+        "encoding/base64"        
 )
 
 const GMapsHost = "http://maps.googleapis.com/maps/api/geocode/"
 const GMapsResponseFormat = "json"        
 
 type GeocoderProxy struct{}
-
 type GoogleMapsRequest struct {}
 
 func (gp GeocoderProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-        var gmr GoogleMapsRequest
-        fmt.Println(r.URL)
-
-        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com", Path: "/maps/api/geocode/json" }         
-        q := gmaps_url.Query()
-        q.Set("address", r.FormValue("address"))
-        gmaps_url.RawQuery = q.Encode()
-        
-        gmr.Get(gmaps_url.String())
-        // fmt.Println(gmaps_url.String())
+        var gmr GoogleMapsRequest                
+        resp := gmr.Get(r.RequestURI)
+        w.Write([]byte(resp))
 }
 
-func (gmr *GoogleMapsRequest) Get(url string) (response string) {
-        // TODO: sign request
-        fmt.Println(url)
+func (gmr *GoogleMapsRequest) Get(req_uri string) (response string) {        
+        gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com"}
+
+        signed_url := SignRequest(req_uri)        
+        fmt.Println("signed url: " + signed_url)
         
-        resp, err := http.Get(url)
+        gmaps_url.Path = signed_url
         
+        fmt.Println("complete url: " + gmaps_url.String())
+        
+        to_fetch := gmaps_url.String()
+        resp, err := http.Get(to_fetch)
         body, err := ioutil.ReadAll(resp.Body)
-        resp.Body.Close()
-        
+        resp.Body.Close()        
         if err != nil {
              log.Fatal(err)
-        }        
-        
+        }                
         return string(body[:])
 } 
+
+func SignRequest(unsigned_url string) (signed_url string) {
+        var output []byte
+                
+        // setup the signing hash
+        key, _ := base64.URLEncoding.DecodeString("vNIXE0xscrmjlyV-12Nj_BvUPaw=")       // FIXME: use actual token
+        shash := hmac.New(sha1.New, key)
+
+        // extract URL path and params, sign
+        // to_sign, _ := url.Parse(unsigned_url)        
+        // string_to_sign := to_sign.Path
+        // 
+        fmt.Println("string_to_sign: " + unsigned_url)        
+        shash.Write([]byte(unsigned_url))
+        
+        // add signature
+        // q := to_sign.Query()
+        // q.Set("signature", base64.URLEncoding.EncodeToString(shash.Sum(output)))
+        //         
+        // foo := to_sign
+        // foo.RawQuery = string_to_sign + "&signature=" + base64.URLEncoding.EncodeToString(shash.Sum(output))
+        
+        return unsigned_url + "&signature=" + base64.URLEncoding.EncodeToString(shash.Sum(output))
+}
 
 func main() {
         fmt.Println("Listening on port 4444")

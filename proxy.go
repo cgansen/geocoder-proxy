@@ -8,7 +8,8 @@ import (
         "log"
         "crypto/hmac"
         "crypto/sha1"
-        "encoding/base64"        
+        "encoding/base64"
+        "os"        
 )
 
 type GeocoderProxy struct{}
@@ -51,5 +52,5 @@ func SignRequest(unsigned_url string) (signed_url string) {
 func main() {
         // fmt.Println("Listening on port 4444")
         var gp GeocoderProxy
-        http.ListenAndServe(":4444", gp)
+        http.ListenAndServe(":" + os.Getenv("PORT"), gp)
 }

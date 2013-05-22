@@ -41,7 +41,7 @@ func SignRequest(unsigned_url string) (signed_url string) {
         var output []byte
                 
         // setup the signing hash
-        key, _ := base64.URLEncoding.DecodeString("sAKq6oNk-th0b96RRWxOctAt9ic=")
+        key, _ := base64.URLEncoding.DecodeString(os.Getenv("GMAPS_SECRET_TOKEN"))
         shash := hmac.New(sha1.New, key)
         log.Println("string_to_sign: " + unsigned_url)        
         shash.Write([]byte(unsigned_url))

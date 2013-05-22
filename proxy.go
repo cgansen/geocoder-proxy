@@ -1,7 +1,6 @@
 package main
 
 import (
-        // "fmt"
 	"net/http"
         "net/url"
         "io/ioutil"
@@ -24,9 +23,9 @@ func (gp GeocoderProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (gmr *GoogleMapsRequest) Get(orig_req *http.Request) (response string) {        
         gmaps_url := url.URL{Scheme: "https", Host: "maps.googleapis.com", Path: orig_req.URL.Path, RawQuery: orig_req.URL.RawQuery }        
         signature := SignRequest(orig_req.RequestURI)
-        // fmt.Println("generated signature: " + signature)        
+        log.Println("generated signature: " + signature)
         gmaps_url.RawQuery += ("&signature=" +  signature)        
-        // fmt.Println("complete url: " + gmaps_url.String())
+        log.Println("complete url: " + gmaps_url.String())
         
         to_fetch := gmaps_url.String()
         resp, err := http.Get(to_fetch)
@@ -44,13 +43,14 @@ func SignRequest(unsigned_url string) (signed_url string) {
         // setup the signing hash
         key, _ := base64.URLEncoding.DecodeString("sAKq6oNk-th0b96RRWxOctAt9ic=")
         shash := hmac.New(sha1.New, key)
-        // fmt.Println("string_to_sign: " + unsigned_url)        
+        log.Println("string_to_sign: " + unsigned_url)        
         shash.Write([]byte(unsigned_url))
         return base64.URLEncoding.EncodeToString(shash.Sum(output))
 }
 
 func main() {
-        // fmt.Println("Listening on port 4444")
+        port := os.Getenv("PORT")
+        log.Println("Listening on port ", port)
         var gp GeocoderProxy
-        http.ListenAndServe(":" + os.Getenv("PORT"), gp)
+        http.ListenAndServe(":" + port, gp)
 }
